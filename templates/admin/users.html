@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}用户管理{% endblock %}
+{% block content %}
+<div class="admin-layout">
+  <div class="admin-sidebar">
+    <div style="padding:16px 20px 8px;font-size:.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;">管理菜单</div>
+    <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-item"><i class="fas fa-tachometer-alt"></i> 控制台</a>
+    <a href="{{ url_for('admin.users') }}" class="admin-nav-item active"><i class="fas fa-users"></i> 用户管理</a>
+    <a href="{{ url_for('admin.posts') }}" class="admin-nav-item"><i class="fas fa-file-alt"></i> 帖子管理</a>
+    <a href="{{ url_for('admin.categories') }}" class="admin-nav-item"><i class="fas fa-tags"></i> 分类管理</a>
+    <div style="border-top:1px solid var(--border);margin:12px 0;"></div>
+    <a href="{{ url_for('main.index') }}" class="admin-nav-item"><i class="fas fa-arrow-left"></i> 返回前台</a>
+  </div>
+  <div class="admin-content">
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fas fa-users"></i> 用户管理 <span style="font-weight:400;color:var(--text-muted);">共 {{ pagination.total }} 人</span></h3>
+      </div>
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border);">
+        <form method="GET" class="search-box">
+          <input class="form-control" name="q" placeholder="搜索用户名或邮箱..." value="{{ keyword }}">
+          <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> 搜索</button>
+          {% if keyword %}<a href="{{ url_for('admin.users') }}" class="btn btn-secondary">清除</a>{% endif %}
+        </form>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>用户</th><th>邮箱</th><th>注册时间</th><th>帖子</th><th>回复</th><th>状态</th><th>操作</th></tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <img src="{{ u.avatar }}" style="width:32px;height:32px;border-radius:50%;" alt="">
+                  <div>
+                    <a href="{{ url_for('main.user_profile', user_id=u.id) }}">{{ u.username }}</a>
+                    {% if u.is_admin %}<span class="badge badge-admin" style="font-size:.65rem;">管理员</span>{% endif %}
+                  </div>
+                </div>
+              </td>
+              <td style="font-size:.85rem;color:var(--text-muted);">{{ u.email }}</td>
+              <td style="font-size:.82rem;color:var(--text-muted);">{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+              <td>{{ u.post_count }}</td>
+              <td>{{ u.reply_count }}</td>
+              <td>
+                {% if u.is_banned %}<span class="badge badge-danger">封禁</span>
+                {% else %}<span class="badge badge-success">正常</span>{% endif %}
+              </td>
+              <td>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <form method="POST" action="{{ url_for('admin.ban_user', user_id=u.id) }}" style="display:inline;">
+                    <button class="btn btn-sm {% if u.is_banned %}btn-success{% else %}btn-danger{% endif %}"
+                            onclick="return confirm('确认{% if u.is_banned %}解封{% else %}封禁{% endif %}用户 {{ u.username }}？')">
+                      <i class="fas {% if u.is_banned %}fa-check{% else %}fa-ban{% endif %}"></i>
+                      {% if u.is_banned %}解封{% else %}封禁{% endif %}
+                    </button>
+                  </form>
+                  {% if not u.is_admin or u.id != current_user.id %}
+                  <form method="POST" action="{{ url_for('admin.toggle_admin', user_id=u.id) }}" style="display:inline;">
+                    <button class="btn btn-sm btn-warning"
+                            onclick="return confirm('确认修改 {{ u.username }} 的管理员权限？')">
+                      <i class="fas fa-shield-alt"></i>
+                      {% if u.is_admin %}取消管理{% else %}设为管理{% endif %}
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if pagination.pages > 1 %}
+      <div class="pagination">
+        {% for p in pagination.iter_pages() %}
+          {% if p %}<a href="{{ url_for('admin.users', page=p, q=keyword) }}" class="page-link {% if p==pagination.page %}active{% endif %}">{{ p }}</a>
+          {% else %}<span class="page-link disabled">…</span>{% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
