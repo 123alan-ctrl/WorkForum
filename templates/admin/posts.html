@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}帖子管理{% endblock %}
+{% block content %}
+<div class="admin-layout">
+  <div class="admin-sidebar">
+    <div style="padding:16px 20px 8px;font-size:.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;">管理菜单</div>
+    <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-item"><i class="fas fa-tachometer-alt"></i> 控制台</a>
+    <a href="{{ url_for('admin.users') }}" class="admin-nav-item"><i class="fas fa-users"></i> 用户管理</a>
+    <a href="{{ url_for('admin.posts') }}" class="admin-nav-item active"><i class="fas fa-file-alt"></i> 帖子管理</a>
+    <a href="{{ url_for('admin.categories') }}" class="admin-nav-item"><i class="fas fa-tags"></i> 分类管理</a>
+    <div style="border-top:1px solid var(--border);margin:12px 0;"></div>
+    <a href="{{ url_for('main.index') }}" class="admin-nav-item"><i class="fas fa-arrow-left"></i> 返回前台</a>
+  </div>
+  <div class="admin-content">
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fas fa-file-alt"></i> 帖子管理 <span style="font-weight:400;color:var(--text-muted);">共 {{ pagination.total }} 篇</span></h3>
+      </div>
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <form method="GET" class="search-box" style="flex:1;">
+          <input class="form-control" name="q" placeholder="搜索帖子标题..." value="{{ keyword }}">
+          <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> 搜索</button>
+          {% if keyword %}<a href="{{ url_for('admin.posts') }}" class="btn btn-secondary">清除</a>{% endif %}
+        </form>
+        <a href="{{ url_for('admin.posts', deleted=1 if not show_deleted else 0, q=keyword) }}"
+           class="btn {% if show_deleted %}btn-warning{% else %}btn-secondary{% endif %} btn-sm">
+          <i class="fas fa-trash"></i> {% if show_deleted %}隐藏{% else %}显示{% endif %}已删帖子
+        </a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>标题</th><th>作者</th><th>分类</th><th>发布时间</th><th>回复/浏览</th><th>状态</th><th>操作</th></tr>
+          </thead>
+          <tbody>
+            {% for post in posts %}
+            <tr {% if post.is_deleted %}style="opacity:.5;"{% endif %}>
+              <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                <a href="{{ url_for('main.post_detail', post_id=post.id) }}" title="{{ post.title }}">{{ post.title }}</a>
+              </td>
+              <td style="font-size:.85rem;">{{ post.author.username }}</td>
+              <td>
+                <span class="badge" style="color:{{ post.category.color }};background:{{ post.category.color }}18;">
+                  <i class="fas {{ post.category.icon }}"></i> {{ post.category.name }}
+                </span>
+              </td>
+              <td style="font-size:.8rem;color:var(--text-muted);">{{ post.created_at.strftime('%Y-%m-%d') }}</td>
+              <td style="font-size:.85rem;">{{ post.reply_count }} / {{ post.views }}</td>
+              <td>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                  {% if post.is_pinned %}<span class="badge badge-danger"><i class="fas fa-thumbtack"></i></span>{% endif %}
+                  {% if post.is_locked %}<span class="badge badge-warning"><i class="fas fa-lock"></i></span>{% endif %}
+                  {% if post.is_deleted %}<span class="badge badge-danger">已删</span>{% endif %}
+                  {% if not post.is_pinned and not post.is_locked and not post.is_deleted %}<span class="badge badge-success">正常</span>{% endif %}
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                  <form method="POST" action="{{ url_for('admin.pin_post', post_id=post.id) }}" style="display:inline;">
+                    <button class="btn btn-sm {% if post.is_pinned %}btn-secondary{% else %}btn-warning{% endif %}" title="{{ '取消置顶' if post.is_pinned else '置顶' }}">
+                      <i class="fas fa-thumbtack"></i>
+                    </button>
+                  </form>
+                  <form method="POST" action="{{ url_for('admin.lock_post', post_id=post.id) }}" style="display:inline;">
+                    <button class="btn btn-sm {% if post.is_locked %}btn-secondary{% else %}btn-warning{% endif %}" title="{{ '解锁' if post.is_locked else '锁定' }}">
+                      <i class="fas {% if post.is_locked %}fa-unlock{% else %}fa-lock{% endif %}"></i>
+                    </button>
+                  </form>
+                  <form method="POST" action="{{ url_for('admin.delete_post', post_id=post.id) }}" style="display:inline;"
+                        onsubmit="return confirm('确认{{ '恢复' if post.is_deleted else '删除' }}这篇帖子？')">
+                    <button class="btn btn-sm {% if post.is_deleted %}btn-success{% else %}btn-danger{% endif %}" title="{{ '恢复' if post.is_deleted else '删除' }}">
+                      <i class="fas {% if post.is_deleted %}fa-undo{% else %}fa-trash{% endif %}"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if pagination.pages > 1 %}
+      <div class="pagination">
+        {% for p in pagination.iter_pages() %}
+          {% if p %}<a href="{{ url_for('admin.posts', page=p, q=keyword, deleted=show_deleted) }}" class="page-link {% if p==pagination.page %}active{% endif %}">{{ p }}</a>
+          {% else %}<span class="page-link disabled">…</span>{% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
