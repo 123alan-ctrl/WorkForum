@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}无权访问{% endblock %}
+{% block content %}
+<div style="text-align:center;padding:80px 24px;">
+  <div style="font-size:5rem;margin-bottom:16px;">🚫</div>
+  <h2 style="font-size:1.8rem;margin-bottom:8px;">403 - 无权访问</h2>
+  <p style="color:var(--text-muted);margin-bottom:24px;">您没有权限访问此页面，该功能仅限管理员使用。</p>
+  <a href="{{ url_for('main.index') }}" class="btn btn-primary"><i class="fas fa-home"></i> 返回首页</a>
+</div>
+{% endblock %}
