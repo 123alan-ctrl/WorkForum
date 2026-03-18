@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}发布新帖{% endblock %}
+{% block content %}
+<div class="container" style="max-width:760px;">
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fas fa-pen-to-square"></i> 发布新帖</h3>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        <div class="form-group">
+          <label class="form-label">标题 <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" name="title" placeholder="请输入帖子标题（5-200字）" maxlength="200" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">分类 <span style="color:var(--danger)">*</span></label>
+          <select class="form-control" name="category_id" required>
+            <option value="">-- 请选择分类 --</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }} - {{ cat.description }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">内容 <span style="color:var(--danger)">*</span></label>
+          <textarea class="form-control" name="content" rows="12" placeholder="分享你的想法..." required></textarea>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" type="submit"><i class="fas fa-paper-plane"></i> 发布帖子</button>
+          <a href="{{ url_for('main.index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> 取消</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
