@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}个人设置{% endblock %}
+{% block content %}
+<div class="container" style="max-width:560px;">
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fas fa-cog"></i> 个人设置</h3>
+    </div>
+    <div class="card-body">
+      <div style="text-align:center;margin-bottom:20px;">
+        <img src="{{ current_user.avatar }}" style="width:72px;height:72px;border-radius:50%;border:3px solid var(--border);" alt="">
+        <div style="font-size:.8rem;color:var(--text-muted);margin-top:6px;">头像由 DiceBear 根据用户名自动生成</div>
+      </div>
+      <form method="POST">
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-user"></i> 用户名</label>
+          <input class="form-control" value="{{ current_user.username }}" disabled style="background:#f8fafc;">
+          <small style="color:var(--text-muted);">用户名暂不支持修改</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-envelope"></i> 邮箱</label>
+          <input class="form-control" type="email" name="email" value="{{ current_user.email }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-pen"></i> 个人简介</label>
+          <textarea class="form-control" name="bio" rows="3" placeholder="介绍一下自己吧...">{{ current_user.bio }}</textarea>
+        </div>
+        <hr style="border-color:var(--border);margin:20px 0;">
+        <p style="font-weight:600;margin-bottom:12px;font-size:.9rem;color:var(--text-muted);">修改密码（不修改留空）</p>
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-lock"></i> 新密码</label>
+          <input class="form-control" type="password" name="new_password" placeholder="留空则不修改密码" minlength="6">
+        </div>
+        <hr style="border-color:var(--border);margin:20px 0;">
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-key"></i> 当前密码 <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" type="password" name="current_password" placeholder="请输入当前密码以确认" required>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" type="submit"><i class="fas fa-save"></i> 保存修改</button>
+          <a href="{{ url_for('main.user_profile', user_id=current_user.id) }}" class="btn btn-secondary">取消</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
