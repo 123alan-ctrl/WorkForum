@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user.username }} 的主页{% endblock %}
+{% block content %}
+<div class="container" style="max-width:860px;">
+  <div class="card" style="margin-bottom:16px;">
+    <div class="profile-header">
+      <img src="{{ profile_user.avatar }}" class="profile-avatar" alt="">
+      <div>
+        <div class="profile-name">
+          {{ profile_user.username }}
+          {% if profile_user.is_admin %}<span class="badge badge-admin" style="margin-left:8px;"><i class="fas fa-shield-alt"></i> 管理员</span>{% endif %}
+          {% if profile_user.is_banned %}<span class="badge badge-danger" style="margin-left:8px;"><i class="fas fa-ban"></i> 已封禁</span>{% endif %}
+        </div>
+        <div class="profile-bio">{{ profile_user.bio or '这个人很懒，什么都没写~' }}</div>
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <div class="num">{{ profile_user.post_count }}</div>
+            <div class="lbl">帖子</div>
+          </div>
+          <div class="profile-stat">
+            <div class="num">{{ profile_user.reply_count }}</div>
+            <div class="lbl">回复</div>
+          </div>
+          <div class="profile-stat">
+            <div class="num">{{ profile_user.created_at.strftime('%Y-%m-%d') }}</div>
+            <div class="lbl">注册时间</div>
+          </div>
+        </div>
+      </div>
+      {% if current_user.is_authenticated and current_user.id == profile_user.id %}
+      <a href="{{ url_for('main.user_settings') }}" class="btn btn-secondary btn-sm" style="margin-left:auto;align-self:flex-start;">
+        <i class="fas fa-cog"></i> 编辑资料
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3><i class="fas fa-list"></i> 发布的帖子</h3>
+    </div>
+    {% for post in posts.items %}
+    <div class="post-item">
+      <div class="post-body">
+        <div class="post-title">
+          <a href="{{ url_for('main.post_detail', post_id=post.id) }}">{{ post.title }}</a>
+          {% if post.is_pinned %}<i class="fas fa-thumbtack pin-badge"></i>{% endif %}
+        </div>
+        <div class="post-meta">
+          <span style="color:{{ post.category.color }}"><i class="fas {{ post.category.icon }}"></i> {{ post.category.name }}</span>
+          <span><i class="fas fa-clock"></i> {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+          <span><i class="fas fa-comments"></i> {{ post.reply_count }} 回复</span>
+          <span><i class="fas fa-eye"></i> {{ post.views }} 浏览</span>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="fas fa-inbox"></i><p>暂无帖子</p></div>
+    {% endfor %}
+
+    {% if posts.pages > 1 %}
+    <div class="pagination">
+      {% for p in posts.iter_pages() %}
+        {% if p %}
+          <a href="{{ url_for('main.user_profile', user_id=profile_user.id, page=p) }}" class="page-link {% if p==posts.page %}active{% endif %}">{{ p }}</a>
+        {% else %}<span class="page-link disabled">…</span>{% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
